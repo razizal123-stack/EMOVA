@@ -669,13 +669,24 @@ const PsychologistDetailView = ({ psy, onBack, onChat, onVideo }: { psy: any, on
   );
 };
 
-const AIChatView = ({ onBack, psychologists, articles }: { onBack: () => void, psychologists: any[], articles: any[] }) => {
+const AIChatView = ({ onBack, psychologists, articles, onLimitReached }: { onBack: () => void, psychologists: any[], articles: any[], onLimitReached: () => void }) => {
   const [messages, setMessages] = useState([
-    { id: '1', isBot: true, message: "Halo! Aku EMOVA AI. 😊 Lagi ngerasa capek banget ya hari ini? Tenang aja, kamu gak sendirian kok 🤍. Mau curhat dulu atau mau langsung aku cariin psikolog yang pas buat kamu?", time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
+    { id: '1', isBot: true, message: "Halo! Aku EMOVA AI. 😊 Kamu gapapa? Lagi ngerasa capek banget ya hari ini? Tenang aja, kamu gak sendirian kok 🤍. Mau cerita pelan-pelan aja?", time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [questionCount, setQuestionCount] = useState(0);
+  const [limitReached, setLimitReached] = useState(false);
   const scrollRef = React.useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (limitReached) {
+      const timer = setTimeout(() => {
+        onLimitReached();
+      }, 3500);
+      return () => clearTimeout(timer);
+    }
+  }, [limitReached, onLimitReached]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -684,13 +695,17 @@ const AIChatView = ({ onBack, psychologists, articles }: { onBack: () => void, p
   }, [messages, isLoading]);
 
   const handleSendMessage = async (text: string) => {
-    if (!text.trim() || isLoading) return;
+    if (!text.trim() || isLoading || limitReached) return;
+
+    const currentCount = questionCount + 1;
+    setQuestionCount(currentCount);
 
     const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const newUserMsg = { id: Date.now().toString(), isBot: false, message: text, time };
     
     setMessages(prev => [...prev, newUserMsg]);
     setInputValue('');
+
     setIsLoading(true);
 
     try {
@@ -699,24 +714,27 @@ const AIChatView = ({ onBack, psychologists, articles }: { onBack: () => void, p
         parts: [{ text: m.message }]
       }));
 
-      const systemInstruction = `Anda adalah EMOVA AI, asisten kesehatan mental yang suportif, motivatif, dan punya persona seperti teman curhat Gen Z yang asik dan hangat.
-      Tujuan Anda adalah mendengarkan pengguna, menjawab pertanyaan dasar kesehatan mental dengan bahasa yang mudah dimengerti, memberikan motivasi yang relate, serta merekomendasikan artikel atau psikolog dari daftar EMOVA berikut.
-
-      GAYA BAHASA:
-      - Gunakan bahasa Indonesia Gen Z yang santai, hangat, dan luwes (kayak lagi chatting sama temen sendiri).
-      - Gunakan 'aku' dan 'kamu'.
-      - Kalimat pendek-pendek, hangat, dan bikin nyaman.
-      - Contoh respon: "Lagi capek banget ya?", "Tenang aja, kamu gak sendirian 🤍", "Mau curhat dulu atau kamu mau langsung cari psikolog sekarang?", "It's okay to not be okay, we're in this together."
-      - Gunakan emoji yang pas (😊, 🤍, ✨, 💪).
-
-      DAFTAR PSIKOLOG EMOVA:
-      ${psychologists.map(p => `- ${p.name} (${p.specialization}): ${p.bio}`).join('\n')}
+      const systemInstruction = `Anda adalah EMOVA AI, teman curhat Gen Z yang sangat asik, hangat, dan to-the-point.
       
-      DAFTAR ARTIKEL EMOVA:
-      ${articles.map(a => `- ${a.title} (${a.category}): ${a.desc}`).join('\n')}
+      GAYA BAHASA & ATURAN RESPON:
+      - Respon HARUS SINGKAT dan natural (gak boleh panjang lebar/deskriptif kecuali diminta).
+      - Kayak lagi chatting sama temen deket (pake 'aku' dan 'kamu').
+      - Contoh: "Kamu gapapa?", "Mau cerita pelan-pelan aja 🤍", "Aku dengerin kok", "Kayaknya kamu lagi capek ya?", "Semangat ya, aku di sini buat kamu ✨".
+      - Jangan pake bahasa yang kaku atau kayak ensiklopedia.
+      - Pakai emoji yang hangat tapi gak berlebihan (🤍, 😊, ✨).
+
+      TANGGUNG JAWAB:
+      - Dengerin curhatan pengguna dengan empati.
+      - Kasih motivasi singkat yang ngena.
+      - Rekomendasikan psikolog atau artikel EMOVA cuma kalo emang beneran butuh/nyambung.
+
+      DATA PSIKOLOG:
+      ${psychologists.map(p => `- ${p.name} (${p.specialization})`).join('\n')}
       
-      Jika memberikan rekomendasi, sebutkan nama psikolog atau judul artikelnya.
-      Selalu ingatkan pengguna bahwa Anda adalah AI dan bukan pengganti bantuan klinis profesional jika mereka sedang dalam krisis hebat atau darurat.`;
+      DATA ARTIKEL:
+      ${articles.map(a => `- ${a.title}`).join('\n')}
+
+      Kalo keadaan pengguna darurat/krisis parah, saranin hubungi psikolog sekarang juga di fitur 'Psikolog'.`;
 
       const response = await ai.models.generateContent({
         model: "gemini-3-flash-preview",
@@ -735,6 +753,18 @@ const AIChatView = ({ onBack, psychologists, articles }: { onBack: () => void, p
         message: aiResponse,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       }]);
+
+      if (currentCount >= 5) {
+        setTimeout(() => {
+          setLimitReached(true);
+          setMessages(prev => [...prev, {
+            id: 'limit-msg',
+            isBot: true,
+            message: "Biar berceritamu makin nyaman dan lega, yuk lanjut konsultasi bareng psikolog 🤍",
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          }]);
+        }, 2000);
+      }
     } catch (error) {
       console.error("AI Chat Error:", error);
       setMessages(prev => [...prev, {
@@ -835,6 +865,12 @@ const AIChatView = ({ onBack, psychologists, articles }: { onBack: () => void, p
           )}
         </div>
 
+        {!limitReached && (
+          <div className="px-6 py-2 bg-white/80 border-t border-gray-50 flex justify-between items-center">
+            <p className="text-[10px] font-bold text-purple-400 uppercase tracking-widest">Sesi Gratis</p>
+            <p className="text-[10px] font-bold text-gray-400">{5 - questionCount} pertanyaan tersisa</p>
+          </div>
+        )}
         <form 
           onSubmit={(e) => { e.preventDefault(); handleSendMessage(inputValue); }}
           className="p-6 bg-white border-t border-gray-100 flex gap-4"
@@ -843,8 +879,8 @@ const AIChatView = ({ onBack, psychologists, articles }: { onBack: () => void, p
             type="text" 
             value={inputValue}
             onChange={e => setInputValue(e.target.value)}
-            disabled={isLoading}
-            placeholder="Ketik pesan kamu di sini..."
+            disabled={isLoading || limitReached}
+            placeholder={limitReached ? "Sesi gratis berakhir 🤍" : "Ketik pesan kamu di sini..."}
             className="flex-1 px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-purple-200 outline-none transition-all disabled:opacity-50"
           />
           <button 
@@ -1481,7 +1517,7 @@ export default function App() {
   };
 
   if (view === 'ai-chat') {
-    return <AIChatView psychologists={psychologists} articles={ARTICLES} onBack={() => setView('landing')} />;
+    return <AIChatView psychologists={psychologists} articles={ARTICLES} onBack={() => setView('landing')} onLimitReached={() => setView('pricing')} />;
   }
 
   if (view === 'article-detail') {
