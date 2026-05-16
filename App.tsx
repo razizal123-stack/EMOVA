@@ -544,7 +544,7 @@ const ArticleDetailView = ({ article, onBack }: { article: any, onBack: () => vo
   );
 };
 
-const PsychologistDetailView = ({ psy, onBack, onChat, onVideo }: { psy: any, onBack: () => void, onChat: () => void, onVideo: () => void }) => {
+const PsychologistDetailView = ({ psy, onBack, onChat, onVideo, isPaid }: { psy: any, onBack: () => void, onChat: () => void, onVideo: () => void, isPaid: boolean }) => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -594,22 +594,41 @@ const PsychologistDetailView = ({ psy, onBack, onChat, onVideo }: { psy: any, on
                 </div>
                 
                 <div className="flex gap-3">
-                  <a 
-                    href={`https://wa.me/${psy.phone}?text=${encodeURIComponent(`Halo ${psy.name}, saya ingin memulai sesi Chat via EMOVA.`)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-1 md:flex-none px-8 py-4 bg-purple-50 text-purple-600 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-purple-100 transition-all shadow-sm"
-                  >
-                    <MessageCircle className="w-5 h-5" /> Chat via WhatsApp
-                  </a>
-                  <a 
-                    href={`https://wa.me/${psy.phone}?text=${encodeURIComponent(`Halo ${psy.name}, saya ingin memulai sesi Video Call via EMOVA.`)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-1 md:flex-none px-8 py-4 bg-gray-900 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-gray-800 transition-all shadow-lg"
-                  >
-                    <Video className="w-5 h-5" /> Video Call via WhatsApp
-                  </a>
+                  {isPaid ? (
+                    <>
+                      <a 
+                        href={`https://wa.me/${psy.phone}?text=${encodeURIComponent(`Halo ${psy.name}, saya ingin memulai sesi Chat via EMOVA.`)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 md:flex-none px-8 py-4 bg-purple-50 text-purple-600 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-purple-100 transition-all shadow-sm"
+                      >
+                        <MessageCircle className="w-5 h-5" /> Chat via WhatsApp
+                      </a>
+                      <a 
+                        href={`https://wa.me/${psy.phone}?text=${encodeURIComponent(`Halo ${psy.name}, saya ingin memulai sesi Video Call via EMOVA.`)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 md:flex-none px-8 py-4 bg-gray-900 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-gray-800 transition-all shadow-lg"
+                      >
+                        <Video className="w-5 h-5" /> Video Call via WhatsApp
+                      </a>
+                    </>
+                  ) : (
+                    <>
+                      <button 
+                        onClick={onChat}
+                        className="flex-1 md:flex-none px-8 py-4 bg-purple-50 text-purple-600 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-purple-100 transition-all shadow-sm group"
+                      >
+                        <Lock className="w-4 h-4 text-purple-400 group-hover:text-purple-600" /> Unlock Chat
+                      </button>
+                      <button 
+                        onClick={onVideo}
+                        className="flex-1 md:flex-none px-8 py-4 bg-gray-900 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-gray-800 transition-all shadow-lg"
+                      >
+                        <Lock className="w-4 h-4 text-gray-400" /> Unlock Video
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -897,7 +916,7 @@ const AIChatView = ({ onBack, psychologists, articles, onLimitReached }: { onBac
   );
 };
 
-const DashboardView = ({ onBack, psychologists, onOpenDetail }: { onBack: () => void, psychologists: any[], onOpenDetail: (psy: any) => void }) => {
+const DashboardView = ({ onBack, psychologists, onOpenDetail, isPaid, onPay }: { onBack: () => void, psychologists: any[], onOpenDetail: (psy: any) => void, isPaid: boolean, onPay: () => void }) => {
   const [activeTab, setActiveTab] = useState('chat');
   const [selectedPsycId, setSelectedPsycId] = useState(psychologists[0]?.id || '0');
   const [inputValue, setInputValue] = useState('');
@@ -1023,22 +1042,41 @@ const DashboardView = ({ onBack, psychologists, onOpenDetail }: { onBack: () => 
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <a 
-                      href={`https://wa.me/${dr.phone}?text=${encodeURIComponent(`Halo ${dr.name}, saya ingin memulai sesi Chat via EMOVA.`)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-1 py-3 rounded-xl text-[10px] font-bold flex items-center justify-center gap-2 bg-purple-50 text-purple-600 hover:bg-purple-100 transition-all"
-                    >
-                      <MessageCircle className="w-4 h-4" /> Chat via WA
-                    </a>
-                    <a 
-                      href={`https://wa.me/${dr.phone}?text=${encodeURIComponent(`Halo ${dr.name}, saya ingin memulai sesi Video Call via EMOVA.`)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-1 py-3 rounded-xl text-[10px] font-bold bg-gray-900 text-white flex items-center justify-center gap-2 hover:bg-gray-700 transition-all"
-                    >
-                      <Video className="w-4 h-4" /> Video Call via WA
-                    </a>
+                    {isPaid ? (
+                      <>
+                        <a 
+                          href={`https://wa.me/${dr.phone}?text=${encodeURIComponent(`Halo ${dr.name}, saya ingin memulai sesi Chat via EMOVA.`)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 py-3 rounded-xl text-[10px] font-bold flex items-center justify-center gap-2 bg-purple-50 text-purple-600 hover:bg-purple-100 transition-all"
+                        >
+                          <MessageCircle className="w-4 h-4" /> Chat via WA
+                        </a>
+                        <a 
+                          href={`https://wa.me/${dr.phone}?text=${encodeURIComponent(`Halo ${dr.name}, saya ingin memulai sesi Video Call via EMOVA.`)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 py-3 rounded-xl text-[10px] font-bold bg-gray-900 text-white flex items-center justify-center gap-2 hover:bg-gray-700 transition-all"
+                        >
+                          <Video className="w-4 h-4" /> Video Call via WA
+                        </a>
+                      </>
+                    ) : (
+                      <>
+                        <button 
+                          onClick={onPay}
+                          className="flex-1 py-3 rounded-xl text-[10px] font-bold flex items-center justify-center gap-2 bg-purple-50 text-purple-600 hover:bg-purple-100 transition-all group"
+                        >
+                          <Lock className="w-3 h-3 text-purple-400 group-hover:text-purple-600" /> Unlock Chat
+                        </button>
+                        <button 
+                          onClick={onPay}
+                          className="flex-1 py-3 rounded-xl text-[10px] font-bold bg-gray-900 text-white flex items-center justify-center gap-2 hover:bg-gray-700 transition-all"
+                        >
+                          <Lock className="w-3 h-3 text-gray-400" /> Unlock Video
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               ))}
@@ -1215,6 +1253,7 @@ const PsychologistRegistration = ({ onBack, onSubmit }: { onBack: () => void, on
 
 export default function App() {
   const [view, setView] = useState<'landing' | 'pricing' | 'app' | 'psychologist-registration' | 'payment-confirmation' | 'psychologist-selection-video' | 'article-detail' | 'psychologist-detail' | 'ai-chat'>('landing');
+  const [isPaid, setIsPaid] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<any>(null);
   const [isPaying, setIsPaying] = useState(false);
   const [selectedPsyForVideoCall, setSelectedPsyForVideoCall] = useState<any>(null);
@@ -1405,24 +1444,6 @@ export default function App() {
       ]
     },
     { 
-      id: '3', 
-      name: 'Dr. Rizky Saputra, M.Psi', 
-      specialization: 'Mental Health & Self-Healing', 
-      rating: 4.9,
-      isOnline: false,
-      phone: '6283134820924',
-      bio: 'Pemberdayaan diri dan pemulihan trauma untuk keseimbangan mental.', 
-      avatar: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&q=80&w=150', 
-      isVerified: true,
-      welcome: "Halo, saya Rizky. Mari kita mulai perjalanan pemulihanmu bersama.",
-      suggestions: ["Self-healing", "Berdamai dengan masa lalu", "Self-love", "Meditasi"],
-      specialtyReplies: [
-        "Self-healing dimulai dengan memaafkan diri sendiri. Sudahkah kamu melakukannya hari ini?",
-        "Masa lalu adalah guru, bukan penjara. Kita bisa belajar darinya tanpa terpaku di sana.",
-        "Setiap orang punya waktu pemulihan yang berbeda-beda. Gak perlu buru-buru."
-      ]
-    },
-    { 
       id: '4', 
       name: 'Dr. Tiara Maharani, M.Psi', 
       specialization: 'Stress Management', 
@@ -1460,7 +1481,13 @@ export default function App() {
     }
   ]);
 
-  const handleStart = () => setView('pricing');
+  const handleStart = () => {
+    if (isPaid) {
+      setView('app');
+    } else {
+      setView('pricing');
+    }
+  };
   
   const handleSelectPlan = (plan: any) => {
     setSelectedPlan(plan);
@@ -1469,6 +1496,7 @@ export default function App() {
 
   const confirmPayment = () => {
     setIsPaying(false);
+    setIsPaid(true);
     if (selectedPlan?.type === 'Video Call') {
       if (selectedPsyForVideoCall) {
         setView('payment-confirmation');
@@ -1491,18 +1519,22 @@ export default function App() {
   };
 
   const handleStartChatFromDetail = (psy: any) => {
-    // Start Chat usually requires payment too but for this flow lets just go to app
-    // and select the psy.
+    if (!isPaid) {
+      setView('pricing');
+      return;
+    }
     setView('app');
-    // We'd ideally need a way to pass the selected id to DashboardView on mount
-    // but the state inside DashboardView is local. 
-    // Actually DashboardView uses psychologists list.
   };
 
   const handleStartVideoFromDetail = (psy: any) => {
+    if (!isPaid) {
+      setSelectedPsyForVideoCall(psy);
+      setSelectedPlan({ type: "Video Call", basePrice: "Rp50.000", icon: Video });
+      setIsPaying(true);
+      return;
+    }
     setSelectedPsyForVideoCall(psy);
-    setSelectedPlan({ type: "Video Call", basePrice: "Rp50.000", icon: Video });
-    setIsPaying(true);
+    setView('payment-confirmation');
   };
 
   const handleSelectArticle = (article: any) => {
@@ -1531,6 +1563,7 @@ export default function App() {
         onBack={() => setView('landing')} 
         onChat={() => handleStartChatFromDetail(selectedPsyForDetail)}
         onVideo={() => handleStartVideoFromDetail(selectedPsyForDetail)}
+        isPaid={isPaid}
       />
     );
   }
@@ -1555,7 +1588,7 @@ export default function App() {
   }
 
   if (view === 'app') {
-    return <DashboardView onBack={() => setView('landing')} psychologists={psychologists} onOpenDetail={handleOpenDetail} />;
+    return <DashboardView onBack={() => setView('landing')} psychologists={psychologists} onOpenDetail={handleOpenDetail} isPaid={isPaid} onPay={() => setView('pricing')} />;
   }
 
   if (view === 'payment-confirmation') {
@@ -1824,7 +1857,6 @@ export default function App() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 text-sm">
             {[
               { name: "Andini, 21", comment: "Akhirnya ada tempat di mana aku gak ngerasa dihakimi pas overthinking hal-hal kecil. Fitur chat-nya bikin nyaman banget!" },
-              { name: "Rizky, 23", comment: "Pas baru lulus nyari kerja, kecemasan bener-bener nyata. Sesi EMOVA ngebantu aku tetep tenang." },
               { name: "Sarah, 19", comment: "Suka banget fitur anonimnya. Akhirnya bisa cerita soal traumaku tanpa khawatir siapa yang denger." }
             ].map((t, i) => (
               <div key={i} className="bg-white border border-gray-100 p-8 rounded-3xl shadow-sm italic text-gray-600 relative">
