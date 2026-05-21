@@ -27,7 +27,13 @@ import {
   Sparkles,
   Bot,
   RefreshCcw,
-  ExternalLink
+  ExternalLink,
+  Eye,
+  EyeOff,
+  Mail,
+  Key,
+  Check,
+  AlertCircle
 } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 
@@ -41,7 +47,17 @@ function cn(...inputs: ClassValue[]) {
 
 // --- Components ---
 
-const Navbar = ({ onStart }: { onStart: () => void }) => {
+const Navbar = ({ 
+  onStart, 
+  currentUser, 
+  onAuth, 
+  onLogout 
+}: { 
+  onStart: () => void, 
+  currentUser: any, 
+  onAuth: (mode: 'login' | 'register') => void, 
+  onLogout: () => void 
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -56,7 +72,7 @@ const Navbar = ({ onStart }: { onStart: () => void }) => {
       "fixed top-0 left-0 right-0 z-50 transition-all duration-300 px-6 py-4",
       scrolled ? "bg-white/80 backdrop-blur-md border-bottom border-gray-100 py-3 shadow-sm" : "bg-transparent"
     )}>
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
+      <div className="max-w-7xl mx-auto flex items-center justify-between font-sans">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
             <Heart className="w-5 h-5 text-white fill-white" />
@@ -70,12 +86,40 @@ const Navbar = ({ onStart }: { onStart: () => void }) => {
               {item}
             </a>
           ))}
-          <button 
-            onClick={onStart}
-            className="px-5 py-2.5 bg-purple-600 text-white text-sm font-semibold rounded-full hover:bg-purple-700 transition-all shadow-lg shadow-purple-200"
-          >
-            Mulai Ceritamu
-          </button>
+          {currentUser ? (
+            <div className="flex items-center gap-4">
+              <span className="text-xs font-bold text-purple-600">
+                Halo, {currentUser.name}! 🤍
+              </span>
+              <button 
+                onClick={onStart}
+                className="px-5 py-2.5 bg-purple-600 text-white text-sm font-semibold rounded-full hover:bg-purple-700 transition-all shadow-lg shadow-purple-200"
+              >
+                Konsultasi 🚀
+              </button>
+              <button 
+                onClick={onLogout}
+                className="text-xs font-bold text-red-500 hover:text-red-700 transition-colors"
+              >
+                Log Out
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={() => onAuth('login')}
+                className="text-sm font-bold text-purple-600 hover:text-purple-800 transition-colors"
+              >
+                Masuk ✨
+              </button>
+              <button 
+                onClick={onStart}
+                className="px-5 py-2.5 bg-purple-600 text-white text-sm font-semibold rounded-full hover:bg-purple-700 transition-all shadow-lg shadow-purple-200"
+              >
+                Mulai Ceritamu
+              </button>
+            </div>
+          )}
         </div>
 
         <button className="md:hidden text-gray-900" onClick={() => setIsOpen(!isOpen)}>
@@ -91,18 +135,46 @@ const Navbar = ({ onStart }: { onStart: () => void }) => {
             exit={{ opacity: 0, y: -20 }}
             className="absolute top-full left-0 right-0 bg-white border-b border-gray-100 p-6 md:hidden shadow-xl"
           >
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 font-sans">
               {["Fitur", "Psikolog", "Harga", "Testimoni", "Artikel"].map((item) => (
                 <a key={item} href={`#${item.toLowerCase()}`} onClick={() => setIsOpen(false)} className="text-lg font-medium text-gray-800">
                   {item}
                 </a>
               ))}
-              <button 
-                onClick={() => { setIsOpen(false); onStart(); }}
-                className="w-full py-3 bg-purple-600 text-white rounded-xl font-bold"
-              >
-                Mulai Ceritamu
-              </button>
+              {currentUser ? (
+                <>
+                  <div className="text-sm font-bold text-purple-600 py-1">
+                    Halo, {currentUser.name}! 🤍
+                  </div>
+                  <button 
+                    onClick={() => { setIsOpen(false); onStart(); }}
+                    className="w-full py-3 bg-purple-600 text-white rounded-xl font-bold"
+                  >
+                    Konsultasi 🚀
+                  </button>
+                  <button 
+                    onClick={() => { setIsOpen(false); onLogout(); }}
+                    className="w-full py-3 bg-red-50 text-red-600 rounded-xl font-bold border border-red-100"
+                  >
+                    Log Out
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button 
+                    onClick={() => { setIsOpen(false); onAuth('login'); }}
+                    className="w-full py-3 bg-purple-50 text-purple-700 rounded-xl font-bold"
+                  >
+                    Masuk ✨
+                  </button>
+                  <button 
+                    onClick={() => { setIsOpen(false); onStart(); }}
+                    className="w-full py-3 bg-purple-600 text-white rounded-xl font-bold"
+                  >
+                    Mulai Ceritamu
+                  </button>
+                </>
+              )}
             </div>
           </motion.div>
         )}
@@ -461,7 +533,21 @@ const PaymentConfirmationView = ({ onBack, selectedPsy }: { onBack: () => void, 
   );
 };
 
-const ArticleDetailView = ({ article, onBack }: { article: any, onBack: () => void }) => {
+const ArticleDetailView = ({ 
+  article, 
+  onBack, 
+  currentUser, 
+  onStart, 
+  onAuth, 
+  onLogout 
+}: { 
+  article: any, 
+  onBack: () => void, 
+  currentUser: any, 
+  onStart: () => void, 
+  onAuth: (mode: 'login' | 'register') => void, 
+  onLogout: () => void 
+}) => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -470,9 +556,9 @@ const ArticleDetailView = ({ article, onBack }: { article: any, onBack: () => vo
     <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="min-h-screen bg-white"
+      className="min-h-screen bg-white font-sans"
     >
-      <Navbar onStart={() => {}} />
+      <Navbar onStart={onStart} currentUser={currentUser} onAuth={onAuth} onLogout={onLogout} />
       
       <div className="pt-32 pb-20 px-6">
         <div className="max-w-3xl mx-auto">
@@ -544,7 +630,27 @@ const ArticleDetailView = ({ article, onBack }: { article: any, onBack: () => vo
   );
 };
 
-const PsychologistDetailView = ({ psy, onBack, onChat, onVideo, isPaid }: { psy: any, onBack: () => void, onChat: () => void, onVideo: () => void, isPaid: boolean }) => {
+const PsychologistDetailView = ({ 
+  psy, 
+  onBack, 
+  onChat, 
+  onVideo, 
+  isPaid,
+  currentUser,
+  onStart,
+  onAuth,
+  onLogout
+}: { 
+  psy: any, 
+  onBack: () => void, 
+  onChat: () => void, 
+  onVideo: () => void, 
+  isPaid: boolean,
+  currentUser: any,
+  onStart: () => void,
+  onAuth: (mode: 'login' | 'register') => void,
+  onLogout: () => void
+}) => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -553,9 +659,9 @@ const PsychologistDetailView = ({ psy, onBack, onChat, onVideo, isPaid }: { psy:
     <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="min-h-screen bg-white"
+      className="min-h-screen bg-white font-sans"
     >
-      <Navbar onStart={() => {}} />
+      <Navbar onStart={onStart} currentUser={currentUser} onAuth={onAuth} onLogout={onLogout} />
       
       <div className="pt-32 pb-20 px-6">
         <div className="max-w-4xl mx-auto">
@@ -916,7 +1022,532 @@ const AIChatView = ({ onBack, psychologists, articles, onLimitReached }: { onBac
   );
 };
 
-const DashboardView = ({ onBack, psychologists, onOpenDetail, isPaid, onPay }: { onBack: () => void, psychologists: any[], onOpenDetail: (psy: any) => void, isPaid: boolean, onPay: () => void }) => {
+const AuthView = ({ onSuccess, onBack, initialMode = 'login' }: { onSuccess: (user: any) => void, onBack: () => void, initialMode?: 'login' | 'register' }) => {
+  const [mode, setMode] = useState<'login' | 'register' | 'forgot'>(initialMode);
+  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [showGoogleModal, setShowGoogleModal] = useState(false);
+
+  // Validation rules
+  const ruleLen = password.length >= 6;
+  const ruleNum = /\d|[\W_]/.test(password);
+  const ruleChar = /[A-Za-z]/.test(password);
+  const ruleMatch = password === confirmPassword && confirmPassword !== '';
+
+  const getLocalDB = () => {
+    const saved = localStorage.getItem('emova_registered_users');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        return [];
+      }
+    }
+    const defaultDB = [
+      { email: 'user@emova.com', username: 'emovauser', password: 'password123', name: 'Sahabat EMOVA' },
+      { email: 'razizal123@gmail.com', username: 'razizal', password: 'password123', name: 'Razizal' }
+    ];
+    localStorage.setItem('emova_registered_users', JSON.stringify(defaultDB));
+    return defaultDB;
+  };
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) {
+      setError('Isi semua field dulu ya, bestie! 🤍');
+      return;
+    }
+    setLoading(true);
+    setError('');
+    
+    setTimeout(() => {
+      try {
+        const db = getLocalDB();
+        const found = db.find((u: any) => 
+          (u.email.toLowerCase() === email.toLowerCase() || u.username.toLowerCase() === email.toLowerCase()) &&
+          u.password === password
+        );
+        if (!found) {
+          throw new Error('Username/Email atau password salah nih. Coba cek lagi ya 🥺');
+        }
+        setSuccess(`Halo ${found.name}! Kamu berhasil masuk ✨`);
+        setTimeout(() => {
+          onSuccess(found);
+        }, 1000);
+      } catch (err: any) {
+        setError(err.message || 'Ada kesalahan sistem, coba lagi nanti ya!');
+      } finally {
+        setLoading(false);
+      }
+    }, 1200);
+  };
+
+  const handleRegister = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!username || !email || !password || !confirmPassword) {
+      setError('Isi semua datamu dulu ya! ✨');
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setError('Format email kamu kurang pas nih 🥺');
+      return;
+    }
+    if (!ruleLen || !ruleNum || !ruleChar) {
+      setError('Password kamu belum memenuhi syarat nih ✨');
+      return;
+    }
+    if (!ruleMatch) {
+      setError('Password dan konfirmasi password harus sama ya!');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    setTimeout(() => {
+      try {
+        const db = getLocalDB();
+        const exists = db?.some((u: any) => 
+          u.email.toLowerCase() === email.toLowerCase() || 
+          u.username.toLowerCase() === username.toLowerCase()
+        );
+        if (exists) {
+          throw new Error('Email atau Username sudah terdaftar nih. Langsung masuk aja! 😊');
+        }
+
+        const newUser = { email, username, password, name: username };
+        db.push(newUser);
+        localStorage.setItem('emova_registered_users', JSON.stringify(db));
+
+        setSuccess('Yey! Akun EMOVA kamu berhasil dibuat! 🎉');
+        setTimeout(() => {
+          onSuccess(newUser);
+        }, 1200);
+      } catch (err: any) {
+        setError(err.message || 'Ada kendala pendaftaran, coba lagi ya.');
+      } finally {
+        setLoading(false);
+      }
+    }, 1500);
+  };
+
+  const handleForgot = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) {
+      setError('Email kamu wajib diisi ya buat reset password 🤍');
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setError('Format email kamu salah nih 🥺');
+      return;
+    }
+    setLoading(true);
+    setError('');
+
+    setTimeout(() => {
+      setLoading(false);
+      setSuccess(`Tautan reset aman dikirim ke ${email}! Silakan cek inbox/spam kamu ya 🤍`);
+      setTimeout(() => {
+        setSuccess('');
+        setMode('login');
+      }, 4000);
+    }, 1200);
+  };
+
+  const handleGoogleSelect = (mockUser: any) => {
+    setLoading(true);
+    setShowGoogleModal(false);
+    setTimeout(() => {
+      setLoading(false);
+      setSuccess(`Selamat datang kembali, ${mockUser.name}! Terkoneksi via Google 🚀`);
+      setTimeout(() => {
+        onSuccess(mockUser);
+      }, 1000);
+    }, 1000);
+  };
+
+  return (
+    <div className="min-h-screen relative flex items-center justify-center p-6 bg-gradient-to-br from-violet-100 via-sky-50 to-purple-50 overflow-hidden">
+      {/* Visual Ambient Blur Spheres */}
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-200/50 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 animate-pulse" />
+      <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-sky-200/40 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
+
+      <div className="w-full max-w-md relative z-10">
+        {/* Back link */}
+        <button 
+          onClick={onBack}
+          className="group flex items-center gap-2 text-purple-600 font-bold mb-6 hover:text-purple-800 transition-colors bg-white/60 backdrop-blur-md py-2.5 px-5 rounded-full border border-purple-100/40 shadow-sm"
+        >
+          <ArrowRight className="w-4 h-4 rotate-180 group-hover:-translate-x-1 transition-transform" /> 
+          <span className="text-sm">Kembali ke Home</span>
+        </button>
+
+        {/* Card Container */}
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white/80 backdrop-blur-2xl px-8 py-10 rounded-[40px] border border-white/60 shadow-2xl shadow-purple-200/50"
+        >
+          {/* Logo & Slogan */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-12 h-12 bg-purple-600 rounded-3xl text-white shadow-lg mb-4">
+              <Heart className="w-6 h-6 fill-current" />
+            </div>
+            <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">EMOVA</h2>
+            <p className="text-sm font-medium text-purple-600 mt-1">Safe space buat dengerin ceritamu 🤍</p>
+          </div>
+
+          {/* Form Content */}
+          <AnimatePresence mode="wait">
+            {mode === 'forgot' ? (
+              <motion.div
+                key="forgot"
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 10 }}
+              >
+                <div className="mb-6">
+                  <h3 className="text-xl font-bold text-gray-800">Lupa Password?</h3>
+                  <p className="text-xs text-gray-500 mt-1">Tenang, masukin email terdaftar kamu di bawah ya. Kami bakal kirim instruksi reset dalam hitungan detik ✨</p>
+                </div>
+
+                <form onSubmit={handleForgot} className="space-y-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-gray-700 ml-1">Email Kamu</label>
+                    <div className="relative">
+                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-purple-400" />
+                      <input 
+                        type="email"
+                        required
+                        value={email}
+                        onChange={e => { setEmail(e.target.value); setError(''); }}
+                        placeholder="contoh@gmail.com"
+                        className="w-full pl-11 pr-5 py-3.5 bg-white border border-purple-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-purple-100 focus:border-purple-300 transition-all text-sm font-sans"
+                      />
+                    </div>
+                  </div>
+
+                  {error && (
+                    <div className="bg-red-50 text-red-600 px-4 py-3 rounded-2xl text-xs font-medium flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 shrink-0" />
+                      <span>{error}</span>
+                    </div>
+                  )}
+
+                  {success && (
+                    <div className="bg-green-50 text-green-700 px-4 py-3 rounded-2xl text-xs font-medium flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 shrink-0 text-green-500" />
+                      <span>{success}</span>
+                    </div>
+                  )}
+
+                  <button 
+                    type="submit"
+                    disabled={loading}
+                    className="w-full py-4 bg-purple-600 text-white rounded-2xl font-bold hover:bg-purple-700 active:scale-[0.98] transition-all text-sm shadow-xl shadow-purple-200 flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    {loading ? <RefreshCcw className="w-4 h-4 animate-spin" /> : 'Kirim Tautan Reset Secure'}
+                  </button>
+
+                  <button 
+                    type="button"
+                    onClick={() => { setMode('login'); setError(''); setSuccess(''); }}
+                    className="w-full py-3 text-center text-xs font-bold text-purple-600 hover:text-purple-800 transition-colors"
+                  >
+                    Kembali ke Login
+                  </button>
+                </form>
+              </motion.div>
+            ) : (
+              <motion.div
+                key={mode}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+              >
+                {/* Custom Tab Switcher */}
+                <div className="flex bg-purple-50/70 p-1 rounded-2xl mb-6 relative border border-purple-100/30">
+                  <button 
+                    onClick={() => { setMode('login'); setError(''); setSuccess(''); }}
+                    className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all relative z-10 ${mode === 'login' ? 'text-purple-700' : 'text-gray-400'}`}
+                  >
+                    Masuk Akun ✨
+                    {mode === 'login' && (
+                      <motion.div layoutId="authTab" className="absolute inset-0 bg-white rounded-xl shadow-sm z-[-1] border border-purple-100/40" />
+                    )}
+                  </button>
+                  <button 
+                    onClick={() => { setMode('register'); setError(''); setSuccess(''); }}
+                    className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all relative z-10 ${mode === 'register' ? 'text-purple-700' : 'text-gray-400'}`}
+                  >
+                    Join EMOVA 🤍
+                    {mode === 'register' && (
+                      <motion.div layoutId="authTab" className="absolute inset-0 bg-white rounded-xl shadow-sm z-[-1] border border-purple-100/40" />
+                    )}
+                  </button>
+                </div>
+
+                <form onSubmit={mode === 'login' ? handleLogin : handleRegister} className="space-y-4">
+                  
+                  {mode === 'register' && (
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-gray-700 ml-1">Username</label>
+                      <div className="relative">
+                        <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-purple-400" />
+                        <input 
+                          type="text"
+                          required
+                          value={username}
+                          onChange={e => { setUsername(e.target.value); setError(''); }}
+                          placeholder="username_kamu"
+                          className="w-full pl-11 pr-5 py-3.5 bg-white border border-purple-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-purple-100 focus:border-purple-300 transition-all text-sm font-sans"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-gray-700 ml-1">
+                      {mode === 'login' ? 'Email atau Username' : 'Email Aktif'}
+                    </label>
+                    <div className="relative">
+                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-purple-400" />
+                      <input 
+                        type={mode === 'login' ? 'text' : 'email'}
+                        required
+                        value={email}
+                        onChange={e => { setEmail(e.target.value); setError(''); }}
+                        placeholder={mode === 'login' ? 'contoh@gmail.com / emovauser' : 'nama@gmail.com'}
+                        className="w-full pl-11 pr-5 py-3.5 bg-white border border-purple-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-purple-100 focus:border-purple-300 transition-all text-sm font-sans"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between items-center px-1">
+                      <label className="text-xs font-bold text-gray-700">Password</label>
+                      {mode === 'login' && (
+                        <button 
+                          type="button" 
+                          onClick={() => { setMode('forgot'); setError(''); setSuccess(''); }}
+                          className="text-[11px] font-bold text-purple-600 hover:text-purple-800 transition-colors"
+                        >
+                          Lupa Password?
+                        </button>
+                      )}
+                    </div>
+                    <div className="relative">
+                      <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-purple-400" />
+                      <input 
+                        type={showPassword ? 'text' : 'password'}
+                        required
+                        value={password}
+                        onChange={e => { setPassword(e.target.value); setError(''); }}
+                        placeholder="••••••"
+                        className="w-full pl-11 pr-12 py-3.5 bg-white border border-purple-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-purple-100 focus:border-purple-300 transition-all text-sm font-sans"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-purple-600"
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {mode === 'register' && (
+                    <>
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-gray-700 ml-1">Konfirmasi Password</label>
+                        <div className="relative">
+                          <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-purple-400" />
+                          <input 
+                            type={showPassword ? 'text' : 'password'}
+                            required
+                            value={confirmPassword}
+                            onChange={e => { setConfirmPassword(e.target.value); setError(''); }}
+                            placeholder="Ulangi password"
+                            className="w-full pl-11 pr-5 py-3.5 bg-white border border-purple-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-purple-100 focus:border-purple-300 transition-all text-sm font-sans"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Password validation indicators (Gen Z friendly) */}
+                      <div className="bg-purple-50/50 p-4 rounded-2xl border border-purple-100/40 space-y-2 mt-3">
+                        <p className="text-[10px] uppercase font-bold text-purple-500 tracking-wider">Syarat Akun Secure ✨</p>
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          <div className={`flex items-center gap-1.5 ${ruleLen ? 'text-green-600 font-medium' : 'text-gray-400'}`}>
+                            <Check className={`w-3.5 h-3.5 ${ruleLen ? 'text-green-500' : 'opacity-20'}`} />
+                            <span>Min. 6 Karakter</span>
+                          </div>
+                          <div className={`flex items-center gap-1.5 ${ruleNum ? 'text-green-600 font-medium' : 'text-gray-400'}`}>
+                            <Check className={`w-3.5 h-3.5 ${ruleNum ? 'text-green-500' : 'opacity-20'}`} />
+                            <span>Angka / Simbol</span>
+                          </div>
+                          <div className={`flex items-center gap-1.5 ${ruleChar ? 'text-green-600 font-medium' : 'text-gray-400'}`}>
+                            <Check className={`w-3.5 h-3.5 ${ruleChar ? 'text-green-500' : 'opacity-20'}`} />
+                            <span>Ada Huruf</span>
+                          </div>
+                          <div className={`flex items-center gap-1.5 ${ruleMatch ? 'text-green-600 font-medium' : 'text-gray-400'}`}>
+                            <Check className={`w-3.5 h-3.5 ${ruleMatch ? 'text-green-500' : 'opacity-20'}`} />
+                            <span>Match Cocok</span>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {error && (
+                    <div className="bg-red-50 text-red-600 px-4 py-3 rounded-2xl text-xs font-medium flex items-center gap-2 border border-red-100">
+                      <AlertCircle className="w-4 h-4 shrink-0 text-red-500" />
+                      <span>{error}</span>
+                    </div>
+                  )}
+
+                  {success && (
+                    <div className="bg-green-50 text-green-700 px-4 py-3 rounded-2xl text-xs font-medium flex items-center gap-2 border border-green-100">
+                      <CheckCircle2 className="w-4 h-4 shrink-0 text-green-500" />
+                      <span>{success}</span>
+                    </div>
+                  )}
+
+                  {/* Submit Button */}
+                  <button 
+                    type="submit"
+                    disabled={loading || (mode === 'register' && (!ruleLen || !ruleNum || !ruleChar || !ruleMatch))}
+                    className="w-full py-4 bg-purple-600 text-white rounded-2xl font-bold hover:bg-purple-700 active:scale-[0.98] transition-all text-sm shadow-xl shadow-purple-200 flex items-center justify-center gap-2 disabled:opacity-40 disabled:scale-100"
+                  >
+                    {loading ? (
+                      <RefreshCcw className="w-4 h-4 animate-spin" />
+                    ) : mode === 'login' ? (
+                      'Masuk Akun 🚀'
+                    ) : (
+                      'Buat Akun EMOVA ✨'
+                    )}
+                  </button>
+
+                  {/* Google OAuth Option (Modern Social) */}
+                  <div className="relative my-6 text-center">
+                    <span className="absolute left-0 right-0 top-1/2 border-t border-purple-100/60 -z-10" />
+                    <span className="bg-white/90 px-3 text-[10px] uppercase font-bold text-gray-400 tracking-wider">Atau via Google</span>
+                  </div>
+
+                  <button 
+                    type="button"
+                    onClick={() => setShowGoogleModal(true)}
+                    className="w-full py-3.5 bg-white hover:bg-gray-50 border border-gray-100 rounded-2xl text-xs font-bold text-gray-700 transition-all shadow-sm flex items-center justify-center gap-2.5 active:scale-[0.98]"
+                  >
+                    <svg className="w-4 h-4" viewBox="0 0 24 24">
+                      <path fill="#EA4335" d="M12 5.04c1.66 0 3.2.57 4.38 1.69l3.27-3.27C17.65 1.58 14.99 1 12 1 7.35 1 3.39 3.65 1.47 7.5L5.1 10.3c.9-2.7 3.38-5.26 6.9-5.26z"/>
+                      <path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.36H12v4.47h6.43c-.28 1.46-1.1 2.7-2.33 3.53l3.6 2.79c2.1-1.94 3.79-4.8 3.79-8.43z"/>
+                      <path fill="#FBBC05" d="M5.1 13.7c-.24-.72-.37-1.49-.37-2.29s.13-1.57.37-2.29L1.47 6.2C.53 8.08 0 10.18 0 12.4s.53 4.32 1.47 6.2l3.63-2.9z"/>
+                      <path fill="#34A853" d="M12 23c3.24 0 5.97-1.07 7.96-2.92l-3.6-2.79c-1.1.74-2.5 1.18-4.36 1.18-3.52 0-6-2.56-6.9-5.26L1.47 16.1C3.39 19.95 7.35 23 12 23z"/>
+                    </svg>
+                    <span>Masuk dengan Google</span>
+                  </button>
+
+                </form>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+      </div>
+
+      {/* Modern Google Account Picker Mockup Overlay */}
+      <AnimatePresence>
+        {showGoogleModal && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-6"
+            onClick={() => setShowGoogleModal(false)}
+          >
+            <motion.div 
+              initial={{ scale: 0.95, y: 15 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 15 }}
+              onClick={e => e.stopPropagation()}
+              className="bg-white rounded-[32px] w-full max-w-sm p-6 shadow-2xl border border-gray-100"
+            >
+              <div className="flex justify-between items-center mb-6">
+                <div className="flex items-center gap-2">
+                  <svg className="w-5 h-5" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l3.66-2.85z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.85c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                  </svg>
+                  <span className="text-xs font-bold text-gray-500 uppercase tracking-widest font-sans">Single Sign-On</span>
+                </div>
+                <button onClick={() => setShowGoogleModal(false)} className="text-gray-400 hover:text-gray-600 transition-colors p-1">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <h4 className="text-lg font-extrabold text-gray-900 leading-tight">Pilih akun Google</h4>
+              <p className="text-xs text-gray-400 mt-1 mb-5">untuk melanjutkan ke aplikasi EMOVA</p>
+
+              <div className="space-y-2">
+                {[
+                  { name: 'Razizal', email: 'razizal123@gmail.com', seed: 'Felix', id: 'g1' },
+                  { name: 'Sahabat EMOVA', email: 'user@emova.com', seed: 'Anya', id: 'g2' },
+                  { name: 'Berta Martha', email: 'bertamartha@gmail.com', seed: 'Sasha', id: 'g3' }
+                ].map((acc) => (
+                  <button
+                    key={acc.id}
+                    onClick={() => handleGoogleSelect(acc)}
+                    className="w-full p-3 rounded-2xl border border-gray-50 hover:border-purple-200 hover:bg-purple-50/20 text-left transition-all flex items-center gap-3"
+                  >
+                    <img 
+                      src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${acc.seed}`} 
+                      className="w-8 h-8 rounded-full border border-purple-100 bg-purple-50" 
+                      alt={acc.name} 
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold text-gray-800 truncate">{acc.name}</p>
+                      <p className="text-[10px] text-gray-400 truncate">{acc.email}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              <div className="mt-4 pt-4 border-t border-gray-50 text-[10px] text-gray-400 text-center">
+                Keamanan kamu terenkripsi 128-bit SSL aman.
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+const DashboardView = ({ 
+  onBack, 
+  psychologists, 
+  onOpenDetail, 
+  isPaid, 
+  onPay, 
+  currentUser, 
+  onLogout 
+}: { 
+  onBack: () => void, 
+  psychologists: any[], 
+  onOpenDetail: (psy: any) => void, 
+  isPaid: boolean, 
+  onPay: () => void, 
+  currentUser: any, 
+  onLogout?: () => void 
+}) => {
   const [activeTab, setActiveTab] = useState('chat');
   const [selectedPsycId, setSelectedPsycId] = useState(psychologists[0]?.id || '0');
   const [inputValue, setInputValue] = useState('');
@@ -974,6 +1605,78 @@ const DashboardView = ({ onBack, psychologists, onOpenDetail, isPaid, onPay }: {
     }, 1500);
   };
 
+  // --- Mood Tracker States & Logic ---
+  const [selectedMood, setSelectedMood] = useState<string | null>(null);
+  const [selectedNotes, setSelectedNotes] = useState('');
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [moodLogs, setMoodLogs] = useState<any[]>(() => {
+    const saved = localStorage.getItem(`emova_moods_${currentUser?.username || currentUser?.email || 'anon'}`);
+    if (saved) {
+      try { return JSON.parse(saved); } catch(e) { return []; }
+    }
+    const defaultLogs = [
+      { id: 'm1', date: 'Kemarin', mood: 'Baik', notes: 'Sesi latihan pernapasan tadi pagi ngebantu banget biar fokus ngerjain tugas kuliah 🎯', tags: ['🧘‍♂️ Meditasi', '☕ Santai'] },
+      { id: 'm2', date: '3 hari lalu', mood: 'Cemas', notes: 'Agak overthinking mikirin deadline pekan depan, semoga besok bisa lebih tenang hiks... 🥺', tags: ['🌪️ Cemas', '🧠 Overthinking'] },
+      { id: 'm3', date: '5 hari lalu', mood: 'Sangat Baik', notes: 'Ketemu temen-temen lama dan nyobain kafe baru, asyik banget bisa ketawa bareng! ❤️🥗', tags: ['💖 Bersyukur', '☕ Santai', '🥪 Makan Enak'] }
+    ];
+    localStorage.setItem(`emova_moods_${currentUser?.username || currentUser?.email || 'anon'}`, JSON.stringify(defaultLogs));
+    return defaultLogs;
+  });
+
+  const MOOD_OPTIONS = [
+    { label: 'Sangat Baik', emoji: '🤗', bg: 'bg-green-50 text-green-700 border-green-100' },
+    { label: 'Baik', emoji: '🙂', bg: 'bg-emerald-50 text-emerald-700 border-emerald-100' },
+    { label: 'Biasa Saja', emoji: '😐', bg: 'bg-blue-50 text-blue-700 border-blue-100' },
+    { label: 'Sedih', emoji: '🥺', bg: 'bg-amber-50 text-amber-700 border-amber-100' },
+    { label: 'Buruk', emoji: '😭', bg: 'bg-red-50 text-red-700 border-red-100' }
+  ];
+
+  const TAGS_OPTIONS = [
+    '🧘‍♂️ Meditasi', '🚀 Kerja', '🌪️ Cemas', '🧠 Overthinking', '🥪 Makan Enak', 
+    '☕ Santai', '🎮 Gaming', '🎵 Musik', '🏃‍♂️ Olahraga', '😴 Kurang Tidur'
+  ];
+
+  const toggleTag = (tag: string) => {
+    if (selectedTags.includes(tag)) {
+      setSelectedTags(selectedTags.filter(t => t !== tag));
+    } else {
+      setSelectedTags([...selectedTags, tag]);
+    }
+  };
+
+  const handleSaveMood = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedMood) return;
+    const newLog = {
+      id: Date.now().toString(),
+      date: 'Hari Ini',
+      mood: selectedMood,
+      notes: selectedNotes.trim() || 'Perasaan dicatat tanpa catatan tambahan.',
+      tags: selectedTags
+    };
+    const updated = [newLog, ...moodLogs];
+    setMoodLogs(updated);
+    localStorage.setItem(`emova_moods_${currentUser?.username || currentUser?.email || 'anon'}`, JSON.stringify(updated));
+    setSelectedMood(null);
+    setSelectedNotes('');
+    setSelectedTags([]);
+  };
+
+  const getMoodAesthetics = (moodName: string) => {
+    return MOOD_OPTIONS.find(m => m.label === moodName) || { emoji: '✨', bg: 'bg-purple-50 text-purple-700 border-purple-100' };
+  };
+
+  const getMotivationalQuote = (moodName: string) => {
+    switch (moodName) {
+      case 'Sangat Baik': return 'Keren banget, bestie! Pertahankan energi positif ini ya! Share rasa bahagia kamu ke sekitar 💖';
+      case 'Baik': return 'Hari yang indah! Semesta mendukung hal-hal baik terjadi padamu hari ini ✨';
+      case 'Biasa Saja': return 'Santai aja, gak setiap hari harus produktif kok. Yuk ambil napas dalam-dalam ☕';
+      case 'Sedih': return 'It\'s completely okay to feel sad. Izinkan dirimu beristirahat dan memproses emosi ini sejenak 🤍';
+      case 'Buruk': return 'Keadaan ini sementara kok, badai pasti berlalu. EMOVA selalu siap dengerin ceritamu kapanpun kamu butuh 🫂';
+      default: return 'Gimana aktivitasmu hari ini? Ambil secangkir air hangat dan rileks ya ✨';
+    }
+  };
+
   return (
     <motion.div 
       initial={{ opacity: 0 }}
@@ -981,166 +1684,445 @@ const DashboardView = ({ onBack, psychologists, onOpenDetail, isPaid, onPay }: {
       className="min-h-screen bg-[#FDFCFD] flex flex-col md:flex-row"
     >
       {/* Sidebar */}
-      <div className="w-full md:w-24 bg-white border-r border-gray-100 flex md:flex-col items-center py-4 md:py-8 px-4 justify-between md:justify-start gap-8 z-20">
-        <div className="w-10 h-10 bg-purple-600 rounded-xl flex items-center justify-center text-white shadow-lg cursor-pointer" onClick={onBack}>
+      <div className="w-full md:w-24 bg-white border-r border-gray-100 flex md:flex-col items-center py-4 md:py-8 px-4 justify-between md:justify-start gap-8 z-20 shadow-sm shrink-0">
+        <div className="w-10 h-10 bg-purple-600 rounded-xl flex items-center justify-center text-white shadow-lg cursor-pointer hover:scale-105 transition-transform" onClick={onBack}>
           <Heart className="w-6 h-6 fill-white" />
         </div>
         
         <div className="flex md:flex-col gap-6">
           {[
-            { id: 'chat', icon: MessageCircle },
-            { id: 'users', icon: User },
-            { id: 'mood', icon: Smile },
-            { id: 'settings', icon: Lock }
+            { id: 'chat', icon: MessageCircle, label: 'Chat' },
+            { id: 'mood', icon: Smile, label: 'Mood' },
+            { id: 'settings', icon: User, label: 'Settings' }
           ].map((item) => (
             <button 
               key={item.id}
               onClick={() => setActiveTab(item.id)}
               className={cn(
-                "w-12 h-12 rounded-2xl flex items-center justify-center transition-all",
+                "w-12 h-12 rounded-2xl flex items-center justify-center transition-all relative group",
                 activeTab === item.id ? "bg-purple-100 text-purple-600 shadow-sm" : "text-gray-400 hover:text-purple-400"
               )}
+              title={item.label}
             >
               <item.icon className="w-6 h-6" />
+              {/* Tooltip */}
+              <span className="absolute left-16 px-2 py-1 bg-gray-900 text-white text-[10px] rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none hidden md:inline ml-2 whitespace-nowrap z-50">
+                {item.label}
+              </span>
             </button>
           ))}
         </div>
 
-        <div className="md:mt-auto">
-          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Profile" className="w-10 h-10 rounded-full border-2 border-purple-200" />
+        <div className="md:mt-auto flex flex-col items-center gap-3">
+          <img 
+            src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser?.username || currentUser?.name || 'Felix'}`} 
+            alt="Profile" 
+            className="w-10 h-10 rounded-full border-2 border-purple-200 bg-purple-50" 
+          />
         </div>
       </div>
 
-      {/* Content Area */}
-      <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
-        {/* User List / Explorer */}
-        <div className="w-full md:w-80 border-r border-gray-100 bg-white overflow-y-auto">
-          <div className="p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Konsultasi</h2>
-            <div className="space-y-4">
-              {psychologists.map((dr) => (
-                <div 
-                  key={dr.id} 
-                  className={cn(
-                    "p-4 rounded-[32px] border transition-all",
-                    selectedPsycId === dr.id ? "bg-white shadow-xl shadow-purple-100/50 border-purple-100" : "bg-white border-gray-50 hover:border-purple-50"
-                  )}
-                >
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="relative">
-                      <img src={dr.avatar} className="w-14 h-14 rounded-2xl object-cover bg-gray-100" alt={dr.name} />
-                      <div className={cn("absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-white", dr.isOnline ? "bg-green-500" : "bg-gray-300")} />
-                    </div>
-                    <div className="flex-1 min-w-0 cursor-pointer" onClick={() => onOpenDetail(dr)}>
-                      <div className="flex items-center justify-between gap-1">
-                        <h4 className="text-sm font-bold text-gray-900 truncate">{dr.name}</h4>
-                        <div className="flex items-center text-[10px] font-bold text-yellow-500 shrink-0">
-                          <Star className="w-3 h-3 fill-current mr-0.5" /> {dr.rating}
+      {/* Main Container */}
+      <div className="flex-1 flex overflow-hidden">
+        
+        {/* TAB 1: CONSULTATION / CHAT */}
+        {activeTab === 'chat' && (
+          <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+            {/* User List / Explorer */}
+            <div className="w-full md:w-80 border-r border-gray-100 bg-white overflow-y-auto">
+              <div className="p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-6">Konsultasi</h2>
+                <div className="space-y-4">
+                  {psychologists.map((dr) => (
+                    <div 
+                      key={dr.id} 
+                      className={cn(
+                        "p-4 rounded-[32px] border transition-all",
+                        selectedPsycId === dr.id ? "bg-white shadow-xl shadow-purple-100/50 border-purple-100" : "bg-white border-gray-50 hover:border-purple-50"
+                      )}
+                    >
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className="relative">
+                          <img src={dr.avatar} className="w-14 h-14 rounded-2xl object-cover bg-gray-100" alt={dr.name} />
+                          <div className={cn("absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-white", dr.isOnline ? "bg-green-500" : "bg-gray-300")} />
+                        </div>
+                        <div className="flex-1 min-w-0 cursor-pointer" onClick={() => onOpenDetail(dr)}>
+                          <div className="flex items-center justify-between gap-1">
+                            <h4 className="text-sm font-bold text-gray-900 truncate">{dr.name}</h4>
+                            <div className="flex items-center text-[10px] font-bold text-yellow-500 shrink-0">
+                              <Star className="w-3 h-3 fill-current mr-0.5" /> {dr.rating}
+                            </div>
+                          </div>
+                          <p className="text-[10px] text-purple-600 font-medium truncate">{dr.specialization}</p>
                         </div>
                       </div>
-                      <p className="text-[10px] text-purple-600 font-medium truncate">{dr.specialization}</p>
+                      <div className="flex gap-2">
+                        {isPaid ? (
+                          <>
+                            <a 
+                              href={`https://wa.me/${dr.phone}?text=${encodeURIComponent(`Halo ${dr.name}, saya ingin memulai sesi Chat via EMOVA.`)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex-1 py-3 rounded-xl text-[10px] font-bold flex items-center justify-center gap-2 bg-purple-50 text-purple-600 hover:bg-purple-100 transition-all"
+                            >
+                              <MessageCircle className="w-4 h-4" /> Chat via WA
+                            </a>
+                            <a 
+                              href={`https://wa.me/${dr.phone}?text=${encodeURIComponent(`Halo ${dr.name}, saya ingin memulai sesi Video Call via EMOVA.`)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex-1 py-3 rounded-xl text-[10px] font-bold bg-gray-900 text-white flex items-center justify-center gap-2 hover:bg-gray-700 transition-all"
+                            >
+                              <Video className="w-4 h-4" /> Video Call via WA
+                            </a>
+                          </>
+                        ) : (
+                          <>
+                            <button 
+                              onClick={onPay}
+                              className="flex-1 py-3 rounded-xl text-[10px] font-bold flex items-center justify-center gap-2 bg-purple-50 text-purple-600 hover:bg-purple-100 transition-all group"
+                            >
+                              <Lock className="w-3 h-3 text-purple-400 group-hover:text-purple-600" /> Unlock Chat
+                            </button>
+                            <button 
+                              onClick={onPay}
+                              className="flex-1 py-3 rounded-xl text-[10px] font-bold bg-gray-900 text-white flex items-center justify-center gap-2 hover:bg-gray-700 transition-all"
+                            >
+                              <Lock className="w-3 h-3 text-gray-400" /> Unlock Video
+                            </button>
+                          </>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex gap-2">
-                    {isPaid ? (
-                      <>
-                        <a 
-                          href={`https://wa.me/${dr.phone}?text=${encodeURIComponent(`Halo ${dr.name}, saya ingin memulai sesi Chat via EMOVA.`)}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex-1 py-3 rounded-xl text-[10px] font-bold flex items-center justify-center gap-2 bg-purple-50 text-purple-600 hover:bg-purple-100 transition-all"
-                        >
-                          <MessageCircle className="w-4 h-4" /> Chat via WA
-                        </a>
-                        <a 
-                          href={`https://wa.me/${dr.phone}?text=${encodeURIComponent(`Halo ${dr.name}, saya ingin memulai sesi Video Call via EMOVA.`)}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex-1 py-3 rounded-xl text-[10px] font-bold bg-gray-900 text-white flex items-center justify-center gap-2 hover:bg-gray-700 transition-all"
-                        >
-                          <Video className="w-4 h-4" /> Video Call via WA
-                        </a>
-                      </>
-                    ) : (
-                      <>
-                        <button 
-                          onClick={onPay}
-                          className="flex-1 py-3 rounded-xl text-[10px] font-bold flex items-center justify-center gap-2 bg-purple-50 text-purple-600 hover:bg-purple-100 transition-all group"
-                        >
-                          <Lock className="w-3 h-3 text-purple-400 group-hover:text-purple-600" /> Unlock Chat
-                        </button>
-                        <button 
-                          onClick={onPay}
-                          className="flex-1 py-3 rounded-xl text-[10px] font-bold bg-gray-900 text-white flex items-center justify-center gap-2 hover:bg-gray-700 transition-all"
-                        >
-                          <Lock className="w-3 h-3 text-gray-400" /> Unlock Video
-                        </button>
-                      </>
-                    )}
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Chat Area */}
+            <div className="flex-1 bg-purple-50/30 flex flex-col relative overflow-hidden">
+              <div className="p-6 bg-white border-b border-gray-100 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <img src={selectedPsyc?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedPsyc?.name}`} className="w-10 h-10 rounded-xl bg-purple-100" />
+                  <div>
+                    <h3 className="font-bold text-gray-900 text-sm">{selectedPsyc?.name}</h3>
+                    <p className="text-[10px] text-green-500 font-bold">{selectedPsyc?.isVerified ? 'Partner Terverifikasi' : 'Sedang Ditinjau'}</p>
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Chat Area */}
-        <div className="flex-1 bg-purple-50/30 flex flex-col relative">
-          <div className="p-6 bg-white border-b border-gray-100 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <img src={selectedPsyc?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedPsyc?.name}`} className="w-10 h-10 rounded-xl bg-purple-100" />
-              <div>
-                <h3 className="font-bold text-gray-900 text-sm">{selectedPsyc?.name}</h3>
-                <p className="text-[10px] text-green-500 font-bold">{selectedPsyc?.isVerified ? 'Partner Terverifikasi' : 'Sedang Ditinjau'}</p>
+                <div className="flex gap-2">
+                  <button className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400"><Video className="w-5 h-5" /></button>
+                  <button className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400"><Star className="w-5 h-5" /></button>
+                </div>
               </div>
-            </div>
-            <div className="flex gap-2">
-              <button className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400"><Video className="w-5 h-5" /></button>
-              <button className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400"><Star className="w-5 h-5" /></button>
-            </div>
-          </div>
 
-          <div className="flex-1 p-6 overflow-y-auto flex flex-col">
-            {messages.map((msg) => (
-              <ChatBubble key={msg.id} isBot={msg.isBot} message={msg.message} time={msg.time} />
-            ))}
-            
-            <div className="mt-auto space-y-4">
-              <div className="flex flex-wrap gap-2 mb-4">
-                {(selectedPsyc.suggestions || [])
-                  .filter(suggestion => !(usedSuggestionsMap[selectedPsycId] || []).includes(suggestion))
-                  .map((chip) => (
-                  <button 
-                    key={chip} 
-                    onClick={() => handleSendMessage(chip)}
-                    className="px-4 py-2 bg-white border border-gray-200 rounded-full text-xs font-medium text-gray-600 hover:border-purple-300 hover:text-purple-600 transition-all font-sans"
-                  >
-                    {chip}
-                  </button>
+              <div className="flex-1 p-6 overflow-y-auto flex flex-col">
+                {messages.map((msg) => (
+                  <ChatBubble key={msg.id} isBot={msg.isBot} message={msg.message} time={msg.time} />
                 ))}
+                
+                <div className="mt-auto space-y-4">
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {(selectedPsyc.suggestions || [])
+                      .filter(suggestion => !(usedSuggestionsMap[selectedPsycId] || []).includes(suggestion))
+                      .map((chip) => (
+                      <button 
+                        key={chip} 
+                        onClick={() => handleSendMessage(chip)}
+                        className="px-4 py-2 bg-white border border-gray-200 rounded-full text-xs font-medium text-gray-600 hover:border-purple-300 hover:text-purple-600 transition-all font-sans"
+                      >
+                        {chip}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
+
+              <form 
+                onSubmit={(e) => { e.preventDefault(); handleSendMessage(inputValue); }}
+                className="p-6 bg-white border-t border-gray-100 flex gap-4 items-center"
+              >
+                <input 
+                  type="text" 
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  placeholder="Tulis ceritamu di sini..." 
+                  className="flex-1 bg-gray-50 border-none rounded-2xl px-6 py-3 text-sm focus:ring-2 focus:ring-purple-200 transition-all font-sans"
+                />
+                <button 
+                  type="submit"
+                  className="bg-purple-600 text-white w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-200 hover:scale-105 transition-transform"
+                >
+                  <ArrowRight className="w-5 h-5" />
+                </button>
+              </form>
             </div>
           </div>
+        )}
 
-          <form 
-            onSubmit={(e) => { e.preventDefault(); handleSendMessage(inputValue); }}
-            className="p-6 bg-white border-t border-gray-100 flex gap-4 items-center"
-          >
-            <input 
-              type="text" 
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Tulis ceritamu di sini..." 
-              className="flex-1 bg-gray-50 border-none rounded-2xl px-6 py-3 text-sm focus:ring-2 focus:ring-purple-200 transition-all font-sans"
-            />
-            <button 
-              type="submit"
-              className="bg-purple-600 text-white w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-200 hover:scale-105 transition-transform"
+        {/* TAB 2: MOOD TRACKER */}
+        {activeTab === 'mood' && (
+          <div className="flex-1 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden bg-[#fafafa]">
+            
+            {/* Left Column: Log a new mood */}
+            <div className="w-full lg:w-[480px] p-6 lg:p-8 bg-white border-r border-gray-100 flex flex-col overflow-y-auto shrink-0">
+              <div className="mb-6">
+                <span className="text-[10px] uppercase tracking-widest font-extrabold text-purple-600 bg-purple-50 px-3 py-1 rounded-full">Refleksi Diri 🌸</span>
+                <h2 className="text-2xl font-black text-gray-900 mt-2 tracking-tight">Apa kabar hari ini, {currentUser?.name || 'bestie'}?</h2>
+                <p className="text-xs text-gray-400 mt-1">Sediakan waktu 1 menit untuk dengerin detak perasaanmu sendiri. Privasimu aman 100%.</p>
+              </div>
+
+              <form onSubmit={handleSaveMood} className="space-y-6">
+                
+                {/* Mood Selectors */}
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-gray-800">1. Gimana mood kamu sekarang?</label>
+                  <div className="grid grid-cols-5 gap-2">
+                    {MOOD_OPTIONS.map((item) => (
+                      <button
+                        key={item.label}
+                        type="button"
+                        onClick={() => { setSelectedMood(item.label); setError(''); }}
+                        className={cn(
+                          "flex flex-col items-center justify-center p-3 rounded-2xl border transition-all hover:scale-105 text-center",
+                          selectedMood === item.label 
+                            ? "bg-purple-600 text-white border-purple-600 shadow-lg shadow-purple-100" 
+                            : "bg-white border-gray-100 hover:border-purple-200 text-gray-800"
+                        )}
+                      >
+                        <span className="text-2xl mb-1">{item.emoji}</span>
+                        <span className="text-[9px] font-bold font-sans truncate w-full">{item.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Motivational Quote Quote (Dynamic Visual) */}
+                {selectedMood && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: -5 }} 
+                    animate={{ opacity: 1, y: 0 }}
+                    className={cn("p-4 rounded-2xl border text-xs leading-relaxed font-medium font-sans", getMoodAesthetics(selectedMood).bg)}
+                  >
+                    {getMotivationalQuote(selectedMood)}
+                  </motion.div>
+                )}
+
+                {/* Tags Selector */}
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-gray-800">2. Apa yang paling memengaruhi perasaanmu?</label>
+                  <div className="flex flex-wrap gap-2">
+                    {TAGS_OPTIONS.map((tag) => {
+                      const isSelected = selectedTags.includes(tag);
+                      return (
+                        <button
+                          key={tag}
+                          type="button"
+                          onClick={() => toggleTag(tag)}
+                          className={cn(
+                            "px-3 py-1.5 rounded-full text-xs font-semibold border transition-all active:scale-95",
+                            isSelected 
+                              ? "bg-purple-100 text-purple-700 border-purple-200 shadow-sm" 
+                              : "bg-gray-50 text-gray-500 border-gray-100 hover:border-gray-200"
+                          )}
+                        >
+                          {tag}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Journaling Note */}
+                <div className="space-y-1.5">
+                  <label className="text-sm font-bold text-gray-800">3. Curhat singkat tentang harimu...</label>
+                  <textarea
+                    rows={4}
+                    value={selectedNotes}
+                    onChange={e => setSelectedNotes(e.target.value)}
+                    placeholder="Tulis apa aja di sini. Bebas, gak ada yang bakal baca selain kamu sendiri... 🤍"
+                    className="w-full p-4 bg-gray-50 border border-gray-100 rounded-3xl text-sm focus:outline-none focus:ring-4 focus:ring-purple-100 focus:border-purple-300 transition-all font-sans resize-none"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={!selectedMood}
+                  className="w-full py-4 bg-purple-600 text-white rounded-3xl font-bold hover:bg-purple-700 transition-all shadow-xl shadow-purple-100 flex items-center justify-center gap-2 text-sm disabled:opacity-40 disabled:scale-100"
+                >
+                  <Check className="w-5 h-5" />
+                  <span>Simpan Catatan Harian</span>
+                </button>
+              </form>
+            </div>
+
+            {/* Right Column: History List */}
+            <div className="flex-1 p-6 lg:p-8 overflow-y-auto flex flex-col">
+              <div className="mb-6 flex justify-between items-center">
+                <div>
+                  <h3 className="text-xl font-extrabold text-gray-900 tracking-tight">Riwayat Catatan Mental</h3>
+                  <p className="text-xs text-gray-400 mt-0.5">Jurnal harian kamu tersimpan lokal dan terlindungi 🔒</p>
+                </div>
+                <div className="text-xs font-bold text-purple-600 bg-purple-50 px-3 py-1.5 rounded-full">
+                  Total Jurnal: {moodLogs.length}
+                </div>
+              </div>
+
+              {moodLogs.length === 0 ? (
+                <div className="flex-1 bg-white border border-gray-100/60 rounded-[40px] p-12 text-center flex flex-col items-center justify-center shadow-sm">
+                  <span className="text-5xl">📝</span>
+                  <h4 className="text-lg font-bold text-gray-800 mt-4">Belum ada jurnal tercatat</h4>
+                  <p className="text-xs text-gray-400 mt-2 max-w-xs mx-auto">Mulai isi jurnal perasaan pertamumu hari ini untuk melatih kesadaran emosional ✨</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {moodLogs.map((log) => {
+                    const aes = getMoodAesthetics(log.mood);
+                    return (
+                      <motion.div
+                        key={log.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        className="bg-white p-6 rounded-[32px] border border-gray-50/80 shadow-md shadow-gray-100/30 font-sans"
+                      >
+                        <div className="flex justify-between items-start gap-4 mb-3">
+                          <div className="flex items-center gap-2">
+                            <span className="text-2xl">{aes.emoji}</span>
+                            <div>
+                              <span className={cn("px-2.5 py-0.5 rounded-full text-[10px] font-bold border", aes.bg)}>
+                                {log.mood}
+                              </span>
+                              <span className="text-[10px] text-gray-400 font-semibold block mt-0.5">{log.date || 'Hari Ini'}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <p className="text-xs text-gray-600 leading-relaxed italic mb-4 font-sans bg-gray-50/50 p-3.5 rounded-xl border border-gray-50/30">
+                          "{log.notes}"
+                        </p>
+
+                        {log.tags && log.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5 pt-2">
+                            {log.tags.map((t: string) => (
+                              <span key={t} className="text-[9px] font-bold bg-purple-50 text-purple-600 px-2.5 py-1 rounded-full">
+                                {t}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+          </div>
+        )}
+
+        {/* TAB 3: ACCOUNT & SETTINGS */}
+        {activeTab === 'settings' && (
+          <div className="flex-1 bg-gradient-to-br from-purple-50/40 via-sky-50/10 to-violet-50/40 p-6 lg:p-12 overflow-y-auto flex items-center justify-center">
+            
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="w-full max-w-xl bg-white p-8 lg:p-10 rounded-[48px] border border-gray-100 shadow-2xl shadow-purple-100/60 font-sans"
             >
-              <ArrowRight className="w-5 h-5" />
-            </button>
-          </form>
-        </div>
+              
+              {/* Profile Card Header */}
+              <div className="text-center pb-8 border-b border-gray-50">
+                <div className="relative inline-block mb-4">
+                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-100 to-sky-100 p-1 flex items-center justify-center shadow-lg shadow-purple-100">
+                    <img 
+                      src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser?.username || currentUser?.name || 'Felix'}`} 
+                      className="w-full h-full rounded-full bg-white object-cover" 
+                      alt="Avatar" 
+                    />
+                  </div>
+                  {isPaid && (
+                    <span className="absolute -bottom-1 right-2 bg-yellow-400 text-white text-xs font-bold px-2 py-0.5 rounded-full border-2 border-white shadow-md">
+                      👑 Premium
+                    </span>
+                  )}
+                </div>
+
+                <h3 className="text-2xl font-black text-gray-900 leading-none">{currentUser?.name || 'Sahabat EMOVA'}</h3>
+                <p className="text-xs text-purple-600 font-bold mt-2">@{currentUser?.username || 'emova_user'}</p>
+                <p className="text-xs text-gray-400 mt-1">{currentUser?.email || 'user@emova.com'}</p>
+              </div>
+
+              {/* Status & Options Content */}
+              <div className="py-6 space-y-6 select-none font-sans">
+                
+                {/* Membership Plan Box */}
+                <div className="bg-purple-50/50 p-6 rounded-3xl border border-purple-100/40 relative overflow-hidden">
+                  <div className="absolute right-0 top-0 text-[100px] leading-none opacity-5 translate-y-[-20%] select-none pointer-events-none text-purple-900 font-black">EM</div>
+                  
+                  <div className="flex justify-between items-center gap-4 mb-4">
+                    <div>
+                      <h4 className="text-sm font-bold text-gray-800">Status Keanggotaan</h4>
+                      <p className="text-xs text-gray-400 mt-0.5">Paket akun kamu di EMOVA hari ini</p>
+                    </div>
+                    {isPaid ? (
+                      <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold border border-green-200">Mitra Premium Aktif</span>
+                    ) : (
+                      <span className="bg-gray-100 text-gray-500 px-3 py-1 rounded-full text-xs font-bold border border-gray-200">Grup Konseling Gratis</span>
+                    )}
+                  </div>
+
+                  <div className="space-y-2 mt-4 font-sans text-xs">
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <Check className="w-4 h-4 text-green-500" />
+                      <span>Chatbot EMOVA AI Aktif & Bebas Tanya jawab ilahi 💬</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <Check className="w-4 h-4 text-green-500" />
+                      <span>Mood tracker harian & riwayat kesehatan terjamin 🔒</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <Check className={cn("w-4 h-4", isPaid ? "text-green-500" : "text-gray-300")} />
+                      <span className={isPaid ? "text-gray-600" : "text-gray-400 line-through"}>Konsultasi Private bareng Psikolog berlisensi</span>
+                    </div>
+                  </div>
+
+                  {!isPaid && (
+                    <button
+                      onClick={onPay}
+                      className="w-full mt-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-2xl text-xs shadow-lg shadow-purple-200/60 transition-colors"
+                    >
+                      Buka Fitur Psikolog Sekarang 🚀
+                    </button>
+                  )}
+                </div>
+
+                {/* Account Actions */}
+                <div className="space-y-2 pt-2">
+                  <button
+                    onClick={onBack}
+                    className="w-full p-4 hover:bg-gray-50 text-left rounded-2xl border border-gray-50 text-xs font-bold text-gray-700 transition-colors flex items-center justify-between"
+                  >
+                    <span>Kembali ke Halaman Utama</span>
+                    <ArrowRight className="w-4 h-4 text-gray-400" />
+                  </button>
+
+                  {onLogout && (
+                    <button
+                      onClick={onLogout}
+                      className="w-full p-4 bg-red-50/50 hover:bg-red-50 text-left rounded-2xl border border-red-100 text-xs font-bold text-red-600 transition-colors flex items-center justify-between"
+                    >
+                      <span>Keluar dari Akun EMOVA</span>
+                      <X className="w-4 h-4 text-red-500" />
+                    </button>
+                  )}
+                </div>
+
+              </div>
+
+            </motion.div>
+          </div>
+        )}
+
       </div>
     </motion.div>
   );
@@ -1252,13 +2234,23 @@ const PsychologistRegistration = ({ onBack, onSubmit }: { onBack: () => void, on
 };
 
 export default function App() {
-  const [view, setView] = useState<'landing' | 'pricing' | 'app' | 'psychologist-registration' | 'payment-confirmation' | 'psychologist-selection-video' | 'article-detail' | 'psychologist-detail' | 'ai-chat'>('landing');
+  const [view, setView] = useState<'landing' | 'pricing' | 'app' | 'psychologist-registration' | 'payment-confirmation' | 'psychologist-selection-video' | 'article-detail' | 'psychologist-detail' | 'ai-chat' | 'auth'>('landing');
   const [isPaid, setIsPaid] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<any>(null);
   const [isPaying, setIsPaying] = useState(false);
   const [selectedPsyForVideoCall, setSelectedPsyForVideoCall] = useState<any>(null);
   const [selectedArticle, setSelectedArticle] = useState<any>(null);
   const [selectedPsyForDetail, setSelectedPsyForDetail] = useState<any>(null);
+  
+  const [currentUser, setCurrentUser] = useState<any>(() => {
+    const saved = localStorage.getItem('emova_current_user');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) { return null; }
+    }
+    return null;
+  });
+  const [intendedView, setIntendedView] = useState<string | null>(null);
+  const [initialAuthMode, setInitialAuthMode] = useState<'login' | 'register'>('login');
   
   const ARTICLES = [
     { 
@@ -1481,12 +2473,50 @@ export default function App() {
     }
   ]);
 
+  const handleStartSuccessPage = (target: 'app' | 'pricing') => {
+    setView(target);
+  };
+
   const handleStart = () => {
+    if (!currentUser) {
+      setIntendedView(isPaid ? 'app' : 'pricing');
+      setInitialAuthMode('login');
+      setView('auth');
+      return;
+    }
     if (isPaid) {
       setView('app');
     } else {
       setView('pricing');
     }
+  };
+
+  const handleStartChatbot = () => {
+    if (!currentUser) {
+      setIntendedView('ai-chat');
+      setInitialAuthMode('login');
+      setView('auth');
+      return;
+    }
+    setView('ai-chat');
+  };
+
+  const handleAuthSuccess = (user: any) => {
+    localStorage.setItem('emova_current_user', JSON.stringify(user));
+    setCurrentUser(user);
+    if (intendedView) {
+      const target = intendedView;
+      setIntendedView(null);
+      setView(target as any);
+    } else {
+      setView('landing');
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('emova_current_user');
+    setCurrentUser(null);
+    setView('landing');
   };
   
   const handleSelectPlan = (plan: any) => {
@@ -1515,6 +2545,12 @@ export default function App() {
 
   const handleOpenDetail = (psy: any) => {
     setSelectedPsyForDetail(psy);
+    if (!currentUser) {
+      setIntendedView('psychologist-detail');
+      setInitialAuthMode('login');
+      setView('auth');
+      return;
+    }
     setView('psychologist-detail');
   };
 
@@ -1539,6 +2575,12 @@ export default function App() {
 
   const handleSelectArticle = (article: any) => {
     setSelectedArticle(article);
+    if (!currentUser) {
+      setIntendedView('article-detail');
+      setInitialAuthMode('login');
+      setView('auth');
+      return;
+    }
     setView('article-detail');
   };
 
@@ -1548,12 +2590,25 @@ export default function App() {
     alert('Terima kasih! Lamaran Anda telah kami terima. Tim EMOVA akan melakukan verifikasi berkas dalam 2-3 hari kerja.');
   };
 
+  if (view === 'auth') {
+    return <AuthView onSuccess={handleAuthSuccess} onBack={() => setView('landing')} initialMode={initialAuthMode} />;
+  }
+
   if (view === 'ai-chat') {
     return <AIChatView psychologists={psychologists} articles={ARTICLES} onBack={() => setView('landing')} onLimitReached={() => setView('pricing')} />;
   }
 
   if (view === 'article-detail') {
-    return <ArticleDetailView article={selectedArticle} onBack={() => setView('landing')} />;
+    return (
+      <ArticleDetailView 
+        article={selectedArticle} 
+        onBack={() => setView('landing')} 
+        currentUser={currentUser}
+        onStart={handleStart}
+        onAuth={(mode) => { setInitialAuthMode(mode); setView('auth'); }}
+        onLogout={handleLogout}
+      />
+    );
   }
 
   if (view === 'psychologist-detail') {
@@ -1564,6 +2619,10 @@ export default function App() {
         onChat={() => handleStartChatFromDetail(selectedPsyForDetail)}
         onVideo={() => handleStartVideoFromDetail(selectedPsyForDetail)}
         isPaid={isPaid}
+        currentUser={currentUser}
+        onStart={handleStart}
+        onAuth={(mode) => { setInitialAuthMode(mode); setView('auth'); }}
+        onLogout={handleLogout}
       />
     );
   }
@@ -1588,7 +2647,17 @@ export default function App() {
   }
 
   if (view === 'app') {
-    return <DashboardView onBack={() => setView('landing')} psychologists={psychologists} onOpenDetail={handleOpenDetail} isPaid={isPaid} onPay={() => setView('pricing')} />;
+    return (
+      <DashboardView 
+        onBack={() => setView('landing')} 
+        psychologists={psychologists} 
+        onOpenDetail={handleOpenDetail} 
+        isPaid={isPaid} 
+        onPay={() => setView('pricing')} 
+        currentUser={currentUser}
+        onLogout={handleLogout}
+      />
+    );
   }
 
   if (view === 'payment-confirmation') {
@@ -1607,7 +2676,12 @@ export default function App() {
 
   return (
     <div className="min-h-screen gradient-mesh">
-      <Navbar onStart={handleStart} />
+      <Navbar 
+        onStart={handleStart} 
+        currentUser={currentUser} 
+        onAuth={(mode) => { setInitialAuthMode(mode); setView('auth'); }} 
+        onLogout={handleLogout} 
+      />
 
       {/* Floating AI Chat Trigger */}
       <motion.button 
@@ -1615,7 +2689,7 @@ export default function App() {
         animate={{ scale: 1, opacity: 1 }}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
-        onClick={() => setView('ai-chat')}
+        onClick={handleStartChatbot}
         className="fixed bottom-8 right-8 z-[100] w-16 h-16 bg-purple-600 text-white rounded-full shadow-2xl flex items-center justify-center group overflow-hidden border-4 border-white"
       >
         <div className="absolute inset-0 bg-gradient-to-tr from-purple-600 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -1646,7 +2720,7 @@ export default function App() {
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-pink-500 to-orange-400">Buat Curhat</span>
             </h1>
             <p className="text-xl text-gray-500 mb-10 max-w-lg leading-relaxed font-medium">
-              Gak perlu nunggu antri. Langsung ngobrol bareng psikolog berlisensi dengan tampilan chat yang santai dan harga <span className="text-gray-900 border-b-2 border-pink-200">sekelas kopi senja</span>.
+              Gak perlu nunggu antri. Langsung ngobrol bareng psikolog berlisensi dengan tampilan chat yang santai and harga <span className="text-gray-900 border-b-2 border-pink-200">sekelas kopi senja</span>.
             </p>
             <div className="flex items-center gap-2 mb-10 text-sm font-semibold text-purple-600/80">
               <Shield className="w-4 h-4" />
@@ -1660,7 +2734,7 @@ export default function App() {
                 Mulai Konsultasi <ArrowRight className="w-6 h-6" />
               </button>
               <button 
-                onClick={() => setView('ai-chat')}
+                onClick={handleStartChatbot}
                 className="px-8 py-5 bg-white text-purple-600 border-2 border-purple-100 rounded-3xl font-bold hover:bg-purple-50 transition-all flex items-center gap-3 text-lg"
               >
                 Tanya AI EMOVA <Sparkles className="w-6 h-6 text-purple-500" />
